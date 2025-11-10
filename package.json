@@ -1,0 +1,14 @@
+{
+  "name": "vali-k-md",
+  "version": "1.0.0",
+  "description": "VALI K MD WhatsApp BOT",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^7.0.5",
+    "dotenv": "^16.0.3",
+    "axios": "^1.6.1"
+  }
+}
