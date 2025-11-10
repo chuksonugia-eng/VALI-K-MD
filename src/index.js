@@ -1,30 +1,171 @@
-require('dotenv').config();
-const { default: makeWASocket, fetchLatestBaileysVersion, useMultiFileAuthState } = require('@whiskeysockets/baileys');
-const menu = require('./menu');
+import makeWASocket, { useMultiFileAuthState, fetchLatestBaileysVersion, DisconnectReason } from "@whiskeysockets/baileys";
+import axios from "axios";
+import dotenv from "dotenv";
+import fs from "fs";
 
-async function startBot() {
-    const { version } = await fetchLatestBaileysVersion();
-    const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info'); // session folder
+dotenv.config();
 
-    const sock = makeWASocket({
-        version,
-        printQRInTerminal: true,
-        auth: state
-    });
+const MENU_IMAGE_URL = "https://i.postimg.cc/kGGf0Nqr/IMG-20251109-WA0214.jpg";
+const menuText = `
+╭━━━━━━ ⚜️  𝐕𝐀𝐋𝐈 𝐊 𝐌𝐃 ⚜ ━━━━━━╮
+│
+│ ⚜️𝐇𝐢: Chukson
+│ ⚜️𝐈\`𝐦: ⚜️ 𝐕𝐀𝐋𝐈 𝐊 𝐌𝐃 ⚜️
+│ ⚜️𝐒𝐓𝐀𝐓𝐔𝐒: 𝑶𝒏𝒍𝒊𝒏𝒆 ⚡
+│ ⚜️𝐑𝐔𝐍𝐓𝐈𝐌𝐄: 0d 0h 3m 47s
+│ ⚜️𝐎𝐖𝐍𝐄𝐑: 𝒌𝒊𝒏𝒈_𝒗𝒂𝒍7
+│ ⚜️𝐕𝐄𝐑𝐒𝐈𝐎𝐍: 1.0.0
+│
+╰━━━━━━━━━━━━━━━━━━━━━━╯
+*___________________________________*
+       ⚜️ *ＭＥＮＵ－ＬＩＳＴ* ⚜️
+*___________________________________*
 
-    sock.ev.on('creds.update', saveCreds);
+⚜️ *ＯＷＮＥＲ－ＭＥＮＵ* ⚜️
+*|* .𝒑𝒊𝒏𝒈
+*|* .𝒂𝒍𝒊𝒗𝒆
+*|* .𝒔𝒆𝒕𝒑𝒑
+*|* .𝒐𝒘𝒏𝒆𝒓
+*|* .𝒈𝒆𝒕𝒑𝒑
+*|* .𝒂𝒖𝒕𝒐𝒕𝒚𝒑𝒊𝒏𝒈
+*|* .𝒂𝒖𝒕𝒐𝒓𝒆𝒂𝒄𝒕
+*|* .𝒂𝒖𝒕𝒐𝒓𝒆𝒂𝒄𝒕𝒔𝒕𝒂𝒕𝒖𝒔
+*|* .𝒂𝒖𝒕𝒐𝒓𝒆𝒄𝒐𝒓𝒅𝒊𝒏𝒈
+*|* .𝒅𝒆𝒍
+*|* .𝒔𝒆𝒍𝒇
+*|* .𝒑𝒖𝒃𝒍𝒊𝒄
+*|* .𝒂𝒍𝒍𝒐𝒘
+*|* .𝒅𝒊𝒔𝒂𝒍𝒍𝒐𝒘
+*|* .𝒍𝒊𝒔𝒕𝒂𝒍𝒍𝒐𝒘𝒆𝒅
 
-    sock.ev.on('messages.upsert', async (m) => {
-        const msg = m.messages[0];
-        if (!msg.message || msg.key.fromMe) return;
-        const from = msg.key.remoteJid;
-        const body = msg.message.conversation || (msg.message.extendedTextMessage && msg.message.extendedTextMessage.text) || "";
+⚜️ *𝐆𝐑𝐎𝐔𝐏－ＭＥＮＵ* ⚜️
+*|* .𝒉𝒊𝒅𝒆𝒕𝒂𝒈
+*|* .𝒕𝒂𝒈𝒂𝒍𝒍
+*|* .𝒅𝒆𝒎𝒐𝒕𝒆
+*|* .𝒑𝒓𝒐𝒎𝒐𝒕𝒆
+*|* .𝒐𝒑𝒆𝒏
+*|* .𝒄𝒍𝒐𝒔𝒆
+*|* .𝒋𝒐𝒊𝒏
+*|* .𝒌𝒊𝒄𝒌
+*|* .𝒍𝒆𝒇𝒕
+*|* .𝒂𝒅𝒅
+*|* .𝒓𝒆𝒔𝒆𝒕𝒍𝒊𝒏𝒌
+*|* .𝒕𝒂𝒈
+*|* .𝒍𝒊𝒔𝒕𝒂𝒅𝒎𝒊𝒏𝒔
+*|* .𝒍𝒊𝒔𝒕𝒐𝒏𝒍𝒊𝒏𝒆
+*|* .𝒂𝒏𝒕𝒊𝒍𝒊𝒏𝒌
+*|* .𝒈𝒓𝒐𝒖𝒑𝒍𝒊𝒏𝒌
+*|* .𝒘𝒆𝒍𝒄𝒐𝒎𝒆
 
-        if (body && (body.startsWith('.menu') || body.startsWith('!menu'))) {
-            await menu.sendMenu(sock, from, msg);
-        }
-        // Add further command handlers here for more commands!
-    });
-}
+⚜️ *𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃－ＭＥＮＵ* ⚜️
+*|* .𝒑𝒍𝒂𝒚
+*|* .𝒚𝒕𝒔𝒆𝒂𝒓𝒄𝒉
+*|* .𝒕𝒊𝒌𝒕𝒐𝒌
+*|* .𝒕𝒐𝒊𝒎𝒈
+*|* .𝒎𝒐𝒗𝒊𝒆
+*|* .𝒕𝒐𝒎𝒑𝟑
+*|* .𝒕𝒐𝒎𝒑𝟒
+*|* .𝒕𝒐𝒖𝒓𝒍
+*|* .𝒂𝒑𝒌
+*|* .𝒔𝒂𝒚
+
+⚜️ *𝐒𝐓𝐈𝐂𝐊𝐄𝐑－ＭＥＮＵ* ⚜️
+*|* .𝒔𝒕𝒊𝒄𝒌𝒆𝒓
+*|* .𝒄𝒓𝒚
+*|* .𝒌𝒊𝒍𝒍
+*|* .𝒉𝒖𝒈
+*|* .𝒉𝒂𝒑𝒑𝒚
+*|* .𝒅𝒂𝒏𝒄𝒆
+*|* .𝒉𝒂𝒏𝒅𝒉𝒐𝒍𝒅
+*|* .𝒉𝒊𝒈𝒉𝒇𝒊𝒗𝒆
+*|* .𝒔𝒍𝒂𝒑
+*|* .𝒌𝒊𝒔𝒔
+*|* .𝒃𝒍𝒖𝒔𝒉
+*|* .𝒃𝒊𝒕𝒆
+*|* .𝒄𝒖𝒅𝒅𝒍𝒆
+
+⚜️ *𝐕𝐎𝐈𝐂𝐄－ＭＥＮＵ* ⚜️
+*|* .𝒃𝒂𝒔𝒔
+*|* .𝒃𝒍𝒐𝒘𝒏
+*|* .𝒅𝒆𝒆𝒑
+*|* .𝒇𝒂𝒔𝒕
+*|* .𝒓𝒆𝒗𝒆𝒓𝒔𝒆
+*|* .𝒓𝒐𝒃𝒐𝒕
+*|* .𝒔𝒍𝒐𝒘
+*|* .𝒔𝒎𝒐𝒐𝒕𝒉
+*|* .𝒔𝒒𝒖𝒊𝒓𝒓𝒆𝒍
+
+⚜️ *𝐅𝐔𝐍－ＭＥＮＵ* ⚜️
+*|* .𝒋𝒐𝒌𝒆
+*|* .𝒕𝒓𝒖𝒕𝒉
+*|* .𝒅𝒂𝒓𝒆
+*|* .𝒂𝒅𝒗𝒊𝒄𝒆
+
+⚜️ *𝐆𝐀𝐌𝐄－ＭＥＮＵ* ⚜️
+*|* .𝒕𝒊𝒄𝒕𝒂𝒄𝒕𝒐𝒆
+
+⚜️ *𝐎𝐓𝐇𝐄𝐑𝐒－ＭＥＮＵ* ⚜️
+*|* .𝒋𝒊𝒅
+*|* .𝒅𝒊𝒄𝒕𝒊𝒐𝒏𝒂𝒓𝒚
+*|* .𝒎𝒚𝒊𝒑
+*|* .𝒄𝒖𝒓𝒓𝒆𝒏𝒄𝒚
+*|* .𝒘𝒆𝒂𝒕𝒉𝒆𝒓
+*|* .𝒄𝒂𝒍𝒄𝒖𝒍𝒂𝒕𝒆
+
+*___________________________________*
+      ⚜️ 𝐕𝐀𝐋𝐈 𝐊 𝐌𝐃 ⚜️
+*___________________________________*
+`;
+
+const startBot = async () => {
+  const { state, saveCreds } = await useMultiFileAuthState("auth_info");
+  const { version } = await fetchLatestBaileysVersion();
+
+  const sock = makeWASocket({
+    version,
+    auth: state,
+    printQRInTerminal: true
+  });
+
+  sock.ev.on("creds.update", saveCreds);
+
+  sock.ev.on("connection.update", (update) => {
+    if (update.connection === "open") {
+      console.log("Bot is online 🚀");
+    }
+    if (update.qr) {
+      console.log("Scan this QR with your WhatsApp phone!");
+    }
+  });
+
+  sock.ev.on("messages.upsert", async (m) => {
+    const msg = m.messages[0];
+    if (!msg?.message) return;
+
+    let body =
+      msg.message.conversation ||
+      msg.message.extendedTextMessage?.text ||
+      "";
+
+    if (body.startsWith(".menu")) {
+      // Download the image
+      const response = await axios.get(MENU_IMAGE_URL, { responseType: "arraybuffer" });
+      const buffer = Buffer.from(response.data, "binary");
+      await sock.sendMessage(
+        msg.key.remoteJid,
+        { image: buffer, caption: menuText },
+        { quoted: msg }
+      );
+    }
+
+    // You can add more commands here e.g.
+    if (body === ".alive") {
+      await sock.sendMessage(
+        msg.key.remoteJid,
+        { text: "Bot alive and working 💚" }, { quoted: msg }
+      );
+    }
+  });
+};
 
 startBot();
