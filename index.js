@@ -1,8 +1,6 @@
-import makeWASocket, { useMultiFileAuthState, fetchLatestBaileysVersion, DisconnectReason } from "@whiskeysockets/baileys";
+import makeWASocket, { useMultiFileAuthState, fetchLatestBaileysVersion } from "@whiskeysockets/baileys";
 import axios from "axios";
 import dotenv from "dotenv";
-import fs from "fs";
-
 dotenv.config();
 
 const MENU_IMAGE_URL = "https://i.postimg.cc/kGGf0Nqr/IMG-20251109-WA0214.jpg";
@@ -69,7 +67,7 @@ const menuText = `
 *|* .𝒂𝒑𝒌
 *|* .𝒔𝒂𝒚
 
-⚜️ *𝐒𝐓𝐈𝐂𝐊𝐄𝐑－ＭＥＮＵ* ⚜️
+⚜️ *𝐒𝐓𝐈𝐂𝐊𝐄𝐑－ＭＥＮ𝐔* ⚜️
 *|* .𝒔𝒕𝒊𝒄𝒌𝒆𝒓
 *|* .𝒄𝒓𝒚
 *|* .𝒌𝒊𝒍𝒍
@@ -84,7 +82,7 @@ const menuText = `
 *|* .𝒃𝒊𝒕𝒆
 *|* .𝒄𝒖𝒅𝒅𝒍𝒆
 
-⚜️ *𝐕𝐎𝐈𝐂𝐄－ＭＥＮＵ* ⚜️
+⚜️ *𝐕𝐎𝐈𝐂𝐄－ＭＥＮ𝐔* ⚜️
 *|* .𝒃𝒂𝒔𝒔
 *|* .𝒃𝒍𝒐𝒘𝒏
 *|* .𝒅𝒆𝒆𝒑
@@ -95,16 +93,16 @@ const menuText = `
 *|* .𝒔𝒎𝒐𝒐𝒕𝒉
 *|* .𝒔𝒒𝒖𝒊𝒓𝒓𝒆𝒍
 
-⚜️ *𝐅𝐔𝐍－ＭＥＮＵ* ⚜️
+⚜️ *𝐅𝐔𝐍－ＭＥＮ𝐔* ⚜️
 *|* .𝒋𝒐𝒌𝒆
 *|* .𝒕𝒓𝒖𝒕𝒉
 *|* .𝒅𝒂𝒓𝒆
 *|* .𝒂𝒅𝒗𝒊𝒄𝒆
 
-⚜️ *𝐆𝐀𝐌𝐄－ＭＥＮＵ* ⚜️
+⚜️ *𝐆𝐀𝐌𝐄－ＭＥＮ𝐔* ⚜️
 *|* .𝒕𝒊𝒄𝒕𝒂𝒄𝒕𝒐𝒆
 
-⚜️ *𝐎𝐓𝐇𝐄𝐑𝐒－ＭＥＮＵ* ⚜️
+⚜️ *𝐎𝐓𝐇𝐄𝐑𝐒－ＭＥＮ𝐔* ⚜️
 *|* .𝒋𝒊𝒅
 *|* .𝒅𝒊𝒄𝒕𝒊𝒐𝒏𝒂𝒓𝒚
 *|* .𝒎𝒚𝒊𝒑
@@ -117,14 +115,14 @@ const menuText = `
 *___________________________________*
 `;
 
-const startBot = async () => {
+async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("auth_info");
   const { version } = await fetchLatestBaileysVersion();
 
   const sock = makeWASocket({
     version,
-    auth: state,
-    printQRInTerminal: true
+    printQRInTerminal: true,
+    auth: state
   });
 
   sock.ev.on("creds.update", saveCreds);
@@ -134,7 +132,7 @@ const startBot = async () => {
       console.log("Bot is online 🚀");
     }
     if (update.qr) {
-      console.log("Scan this QR with your WhatsApp phone!");
+      console.log("Scan QR code with WhatsApp on your phone!");
     }
   });
 
@@ -147,7 +145,7 @@ const startBot = async () => {
       msg.message.extendedTextMessage?.text ||
       "";
 
-    if (body.startsWith(".menu")) {
+    if (body.toLowerCase().startsWith(".menu")) {
       // Download the image
       const response = await axios.get(MENU_IMAGE_URL, { responseType: "arraybuffer" });
       const buffer = Buffer.from(response.data, "binary");
@@ -158,14 +156,14 @@ const startBot = async () => {
       );
     }
 
-    // You can add more commands here e.g.
-    if (body === ".alive") {
+    // Add more commands below as you wish. For now, ".alive" command:
+    if (body.toLowerCase() === ".alive") {
       await sock.sendMessage(
         msg.key.remoteJid,
         { text: "Bot alive and working 💚" }, { quoted: msg }
       );
     }
   });
-};
+}
 
 startBot();
